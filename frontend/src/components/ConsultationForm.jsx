@@ -55,7 +55,8 @@ export default function ConsultationForm() {
 
     setStatus('submitting')
     try {
-      const res = await fetch('/api/consultations', {
+      const apiBase = import.meta.env.VITE_API_URL || ''
+      const res = await fetch(`${apiBase}/api/consultations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, language: lang }),

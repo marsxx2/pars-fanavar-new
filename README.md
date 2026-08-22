@@ -56,16 +56,48 @@ The Vite dev server proxies `/api/*` to `http://localhost:8000` (see
 | POST   | `/api/consultations`  | Create a consultation request (name, company, email, phone, interests[], message, language) |
 | GET    | `/api/consultations`  | List requests — requires header `X-Admin-Key`, disabled unless `ADMIN_API_KEY` is set |
 
-## Deploying
+## Deploying (Vercel + Render)
 
-- Build the frontend with `npm run build` (outputs to `frontend/dist`) and serve
-  it from any static host or behind the same reverse proxy as the API.
-- Put the FastAPI app behind a reverse proxy (nginx, Caddy, etc.) that routes
-  `/api/*` to `uvicorn`/`gunicorn` and serves the built frontend for everything else.
-- Set `FRONTEND_ORIGIN` to your production domain and set `ADMIN_API_KEY` if
-  you want to fetch the submitted leads via `GET /api/consultations`.
-- The SQLite file lives at `backend/data/pars_fanavar.db` — mount that path
-  as a persistent volume in production so leads aren't lost on redeploy.
+This repo is set up to deploy as **frontend on Vercel** + **backend on Render**
+(Render gives the backend a persistent disk, which SQLite needs — Vercel's
+serverless functions have an ephemeral filesystem and would lose leads).
+
+### 1. Backend → Render
+
+1. Go to [render.com](https://render.com) → **New** → **Blueprint**, connect
+   this repo. Render will read `render.yaml` at the repo root and create the
+   `pars-fanavar-api` web service with a 1&nbsp;GB persistent disk mounted at
+   `backend/data` automatically.
+2. In the service's **Environment** tab, set:
+   - `FRONTEND_ORIGIN` → your Vercel domain, e.g. `https://pars-fanavar.vercel.app` (comma-separate if you also want a custom domain)
+   - `ADMIN_API_KEY` → a random secret, only if you want `GET /api/consultations` enabled
+3. Deploy. Note the resulting URL, e.g. `https://pars-fanavar-api.onrender.com`.
+4. Confirm it's alive: `curl https://pars-fanavar-api.onrender.com/api/health`
+
+(No blueprint support / prefer manual setup: create a Web Service, root
+directory `backend`, build command `pip install -r requirements.txt`, start
+command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, and add a disk
+mounted at `backend/data` so the SQLite file survives restarts.)
+
+### 2. Frontend → Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new) and import this GitHub repo.
+2. Vercel will pick up the root `vercel.json`, which builds `frontend/` and
+   publishes `frontend/dist` — no need to change the Root Directory setting.
+3. Add an environment variable:
+   - `VITE_API_URL` → the Render backend URL from step 1 (e.g. `https://pars-fanavar-api.onrender.com`, **no trailing slash**)
+4. Deploy. Once live, go back to Render and make sure `FRONTEND_ORIGIN`
+   matches the exact Vercel URL (including `https://`), then redeploy the
+   backend so CORS allows it.
+
+### Alternative: everything on Vercel
+
+Vercel can also run the FastAPI app as a Python serverless function, but the
+SQLite file **will not reliably persist** between invocations — submitted
+leads can silently disappear. Only do this if you first swap the storage
+layer for something external (Vercel Postgres, Supabase, etc.) instead of
+`backend/app/database.py`'s local SQLite file.
+
 
 ## Notes
 
