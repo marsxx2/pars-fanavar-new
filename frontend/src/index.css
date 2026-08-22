@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Class-based dark mode: toggling `.dark` on <html> switches the palette */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ---- Brand palette ----
+     Signature idea: Pars Fanavar bridges two worlds - the digital layer
+     (RAG / AI / software) and the physical layer (hardware & infrastructure
+     sourcing). Two accent hues carry that duality through the whole page. */
+  --color-ink-950: #0a0e17;
+  --color-ink-900: #0d1220;
+  --color-ink-800: #11172a;
+  --color-ink-700: #1a2238;
+  --color-ink-600: #2a3350;
+
+  --color-paper-50: #f7f8fa;
+  --color-paper-100: #eef1f5;
+  --color-paper-200: #e2e6ed;
+
+  --color-teal-400: #2dd4c4;
+  --color-teal-500: #16bfae;
+  --color-teal-600: #0f9c8e;
+
+  --color-copper-400: #e0985c;
+  --color-copper-500: #c97a44;
+  --color-copper-600: #a86233;
+
+  --color-slate-300: #b7bfcc;
+  --color-slate-400: #8b93a3;
+  --color-slate-500: #5b6472;
+
+  --font-display: "Space Grotesk", "Vazirmatn", ui-sans-serif, sans-serif;
+  --font-body: "Inter", "Vazirmatn", ui-sans-serif, sans-serif;
+  --font-fa: "Vazirmatn", "Space Grotesk", "Inter", ui-sans-serif, sans-serif;
+
+  --animate-drift: drift 20s linear infinite;
+  --animate-coalesce: coalesce 2.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes drift {
+  from { background-position: 0 0; }
+  to { background-position: 200px 200px; }
+}
+
+@keyframes coalesce {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-paper-50);
+  color: var(--color-ink-950);
+}
+
+html[lang="fa"] body {
+  font-family: var(--font-fa);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+html[lang="fa"] .font-display {
+  font-family: var(--font-fa);
+  letter-spacing: 0;
+}
+
+/* Signature structural device: the dual-tone "bridge" rule that separates
+   major sections - teal (digital) fusing into copper (physical). */
+.bridge-rule {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-teal-500) 0%,
+    var(--color-teal-500) 42%,
+    var(--color-copper-500) 58%,
+    var(--color-copper-500) 100%
+  );
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus visibility kept deliberately strong for keyboard users */
+:focus-visible {
+  outline: 3px solid var(--color-teal-500);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--color-teal-500);
+  color: white;
+}
